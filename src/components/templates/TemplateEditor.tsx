@@ -13,11 +13,15 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Props) 
   const [name, setName] = useState(template.name)
   const [body, setBody] = useState(template.body)
   const [postTypeId, setPostTypeId] = useState(template.postTypeId)
+  const [defaultHashtags, setDefaultHashtags] = useState(
+    template.defaultHashtags ?? '',
+  )
 
   useEffect(() => {
     setName(template.name)
     setBody(template.body)
     setPostTypeId(template.postTypeId)
+    setDefaultHashtags(template.defaultHashtags ?? '')
   }, [template])
 
   const postType = POST_TYPE_LIST.find((p) => p.id === postTypeId)
@@ -27,11 +31,13 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Props) 
   }
 
   const save = () => {
+    const trimmedHashtags = defaultHashtags.trim()
     onSave({
       ...template,
       name: name.trim() || '無題のテンプレート',
       body,
       postTypeId,
+      defaultHashtags: trimmedHashtags ? trimmedHashtags : undefined,
       updatedAt: Date.now(),
     })
   }
@@ -70,6 +76,19 @@ export function TemplateEditor({ template, onSave, onCancel, onDelete }: Props) 
           value={body}
           onChange={(e) => setBody(e.target.value)}
         />
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-sm font-medium">デフォルトハッシュタグ</label>
+        <input
+          className="input-base font-mono"
+          value={defaultHashtags}
+          placeholder="#楽曲 #VTuber"
+          onChange={(e) => setDefaultHashtags(e.target.value)}
+        />
+        <p className="text-xs text-slate-500">
+          本文中の <code className="font-mono">{'{{hashtags}}'}</code> に常に追加されるハッシュタグ。動画タイトルから抽出された分とマージされ、重複は自動除去されます。<code className="font-mono">{'{{channelTitle}}'}</code> など他の変数も使用可能です。
+        </p>
       </div>
 
       {postType ? (

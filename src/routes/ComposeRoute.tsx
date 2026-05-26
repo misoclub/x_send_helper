@@ -8,6 +8,7 @@ import { renderTemplate } from '@/features/templates/render'
 import { useRegisteredChannels } from '@/features/youtube/channelsStore'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/lib/storage'
+import { extractHashtagsFromTitle, mergeHashtags } from '@/lib/extractHashtags'
 import {
   loadGroupedVideos,
   loadVideosForChannel,
@@ -43,6 +44,15 @@ export function ComposeRoute() {
   return <ComposeView key={postType.id} postTypeId={postType.id} />
 }
 
+function parseTemplatesByChannel(raw: unknown): Record<string, string> {
+  if (!raw || typeof raw !== 'object') return {}
+  const out: Record<string, string> = {}
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === 'string') out[k] = v
+  }
+  return out
+}
+
 function ComposeView({ postTypeId }: { postTypeId: 'youtube' | 'website' }) {
   const postType = getPostType(postTypeId)!
   const templates = useTemplates()
@@ -63,8 +73,20 @@ function ComposeView({ postTypeId }: { postTypeId: 'youtube' | 'website' }) {
   }, [availableTemplates, templateId])
 
   const [values, setValues] = useState<VariableValues>({})
+  const [manualText, setManualText] = useState<string | null>(null)
+  const [activeChannelId, setActiveChannelId] = useState<string | null>(null)
+  const [templatesByChannel, setTemplatesByChannel] = useLocalStorage<
+    Record<string, string>
+  >(STORAGE_KEYS.templatesByChannel, {}, parseTemplatesByChannel)
   const template = availableTemplates.find((t) => t.id === templateId)
-  const rendered = template ? renderTemplate(template.body, values) : ''
+  const renderValues = useMemo(() => {
+    if (!template?.defaultHashtags) return values
+    const expanded = renderTemplate(template.defaultHashtags, values)
+    const merged = mergeHashtags(expanded, values.hashtags)
+    return { ...values, hashtags: merged }
+  }, [template, values])
+  const rendered = template ? renderTemplate(template.body, renderValues) : ''
+  const displayText = manualText ?? rendered
   const lockedKeys = useMemo(
     () =>
       new Set(
@@ -73,27 +95,41 @@ function ComposeView({ postTypeId }: { postTypeId: 'youtube' | 'website' }) {
     [postType.variables],
   )
 
+  const handlePickVideo = (video: Video) => {
+    setActiveChannelId(video.channelId)
+    const { cleanTitle, hashtags } = extractHashtagsFromTitle(video.title)
+    setValues((prev) => ({
+      ...prev,
+      title: cleanTitle,
+      url: video.url,
+      channelTitle: video.channelTitle,
+      hashtags,
+    }))
+    const saved = templatesByChannel[video.channelId]
+    if (saved && availableTemplates.some((t) => t.id === saved)) {
+      setTemplateId(saved)
+    }
+  }
+
+  const handleTemplateChange = (id: string) => {
+    setTemplateId(id)
+    if (activeChannelId) {
+      setTemplatesByChannel((prev) => ({ ...prev, [activeChannelId]: id }))
+    }
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-xl font-bold">{postType.label}</h1>
 
       {postType.id === 'youtube' ? (
-        <YouTubePicker
-          onPick={(video) =>
-            setValues((prev) => ({
-              ...prev,
-              title: video.title,
-              url: video.url,
-              channelTitle: video.channelTitle,
-            }))
-          }
-        />
+        <YouTubePicker onPick={handlePickVideo} />
       ) : null}
 
       <TemplateSelect
         templates={availableTemplates}
         value={templateId}
-        onChange={setTemplateId}
+        onChange={handleTemplateChange}
       />
 
       <VariableForm
@@ -103,9 +139,26 @@ function ComposeView({ postTypeId }: { postTypeId: 'youtube' | 'website' }) {
         lockedKeys={lockedKeys}
       />
 
-      <TweetPreview text={rendered} />
+      <TweetPreview
+        text={displayText}
+        onChange={setManualText}
+        isManual={manualText !== null}
+        onReset={() => setManualText(null)}
+      />
 
-      <PostToXButton text={rendered} disabled={!template} />
+      {postType.id === 'youtube' && !activeChannelId ? (
+        <p className="text-xs text-amber-600 dark:text-amber-400">
+          上から動画を選択するとXへの投稿ボタンが有効になります。
+        </p>
+      ) : null}
+
+      <PostToXButton
+        text={displayText}
+        disabled={
+          (!template && !manualText) ||
+          (postType.id === 'youtube' && !activeChannelId)
+        }
+      />
 
       <p className="text-xs text-slate-500">
         ※ Xアプリ/ブラウザの投稿画面が開きます。画像添付はX側で別途行ってください。

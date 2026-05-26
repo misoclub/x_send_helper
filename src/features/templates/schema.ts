@@ -5,6 +5,7 @@ export const templateSchema = z.object({
   postTypeId: z.enum(['youtube', 'website']),
   name: z.string().min(1),
   body: z.string(),
+  defaultHashtags: z.string().optional(),
   source: z.enum(['builtin', 'user']),
   updatedAt: z.number(),
 })
