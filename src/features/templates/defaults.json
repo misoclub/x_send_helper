@@ -1,0 +1,26 @@
+[
+  {
+    "id": "builtin-yt-newrelease",
+    "postTypeId": "youtube",
+    "name": "新作動画告知（標準）",
+    "body": "新作動画をUPしました！\n「{{title}}」\n{{mood}}な曲です！\nぜひ聞いてください！！\n{{url}}",
+    "source": "builtin",
+    "updatedAt": 0
+  },
+  {
+    "id": "builtin-yt-short",
+    "postTypeId": "youtube",
+    "name": "シンプル告知",
+    "body": "新作「{{title}}」公開しました！\n{{url}}",
+    "source": "builtin",
+    "updatedAt": 0
+  },
+  {
+    "id": "builtin-web-default",
+    "postTypeId": "website",
+    "name": "Webサイト告知（標準）",
+    "body": "{{title}}\n{{summary}}\n{{url}}",
+    "source": "builtin",
+    "updatedAt": 0
+  }
+]
