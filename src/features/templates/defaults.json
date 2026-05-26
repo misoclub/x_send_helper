@@ -3,7 +3,7 @@
     "id": "builtin-yt-newrelease",
     "postTypeId": "youtube",
     "name": "新作動画告知（へんてこ）",
-    "body": "🎬 新作楽曲をリリースしました！🎶\n『{{title}}』\n{{mood}}\nぜひ聞いてください！！🎧\n{{hashtags}}\n{{url}}",
+    "body": "🎬 新作楽曲をリリースしました！🎶\n\n『{{title}}』\n\n{{mood}}\nぜひ聞いてください！🎧\n{{hashtags}}\n{{url}}",
     "defaultHashtags": "#{{channelTitle}} #楽曲",
     "source": "builtin",
     "updatedAt": 0
@@ -12,7 +12,7 @@
     "id": "builtin-yt-newrelease-text",
     "postTypeId": "youtube",
     "name": "新作動画告知（モラハラ）",
-    "body": "🆕 新作モラハラ動画をUPしました！📺\n『{{title}}』\n{{mood}}\nぜひ見てください👀\nあなたのモラハラストーリーもぜひ教えてください💬\n{{hashtags}}\n{{url}}",
+    "body": "🆕 新作モラハラ動画をUPしました！📺\n\n『{{title}}』\n\n{{mood}}\nぜひ見てください👀\nあなたのモラハラストーリーもぜひ教えてください！💬\n{{hashtags}}\n{{url}}",
     "defaultHashtags": "#{{channelTitle}} #モラハラ",
     "source": "builtin",
     "updatedAt": 0
