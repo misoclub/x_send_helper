@@ -5,7 +5,7 @@ export function AppHeader() {
   const location = useLocation()
   const isSettings = location.pathname.startsWith('/settings')
   return (
-    <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+    <header className="border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="mx-auto flex h-14 max-w-2xl items-center justify-between px-4">
         <Link to="/" className="flex items-center gap-2 font-semibold">
           <Send className="h-5 w-5 text-brand" />
