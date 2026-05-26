@@ -23,14 +23,16 @@ export function AppHeader() {
                 key={pt.id}
                 to={`/compose/${pt.id}`}
                 aria-current={active ? 'page' : undefined}
-                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition ${
+                aria-label={pt.label}
+                title={pt.label}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-medium transition sm:px-3 ${
                   active
                     ? 'bg-white text-brand shadow-sm dark:bg-slate-900'
                     : 'text-slate-500 dark:text-slate-400'
                 }`}
               >
                 <Icon className="h-4 w-4" />
-                <span>{pt.label}</span>
+                <span className="hidden sm:inline">{pt.label}</span>
               </Link>
             )
           })}
