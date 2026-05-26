@@ -1,5 +1,7 @@
 # X Send Helper
 
+**公開URL: https://misoclub.github.io/x_send_helper/**
+
 X（旧Twitter）への投稿テキストをスマホ・PCから素早く生成し、X公式アプリ/ブラウザでそのまま投稿できる、クライアントサイド完結のWebツール。
 
 - 投稿タイプを切替（初期: YouTube動画告知 / Webサイト告知）。新タイプは `src/features/postTypes/` に追加可能。
@@ -25,7 +27,7 @@ npm run dev
 3. **認証情報** → **APIキー** を発行
 4. キーの **アプリケーションの制限** で「HTTPリファラ」を選択し、以下を許可:
    - `http://localhost:5173/*`
-   - `https://<github-username>.github.io/x_send_helper/*`
+   - `https://misoclub.github.io/x_send_helper/*`
 5. キーの **APIの制限** で `YouTube Data API v3` のみに限定
 6. ツールの **設定** 画面にキーを貼り付け、チャンネルを追加
 
@@ -34,7 +36,7 @@ npm run dev
 1. リポジトリを GitHub に push
 2. **Settings → Pages** で **Source** を **GitHub Actions** に設定
 3. main へ push すると `.github/workflows/deploy.yml` が走り `dist/` がデプロイされる
-4. 公開URL: `https://<github-username>.github.io/x_send_helper/`
+4. 公開URL: https://misoclub.github.io/x_send_helper/
 
 カスタムリポジトリ名で運用する場合は `vite.config.ts` の `base` を併せて変更してください。
 

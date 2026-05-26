@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Eye,
@@ -8,11 +8,18 @@ import {
   ArrowUp,
   AlertTriangle,
   HelpCircle,
+  CheckCircle2,
+  XCircle,
+  Loader2,
 } from 'lucide-react'
 import { STORAGE_KEYS } from '@/lib/storage'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { useRegisteredChannels } from '@/features/youtube/channelsStore'
-import { resolveChannel, YouTubeApiError } from '@/features/youtube/client'
+import {
+  resolveChannel,
+  verifyApiKey,
+  YouTubeApiError,
+} from '@/features/youtube/client'
 import { writeUploadsPlaylistId } from '@/features/youtube/cache'
 import { TemplateList } from '@/components/templates/TemplateList'
 import { getQuotaUsed } from '@/features/youtube/quota'
@@ -34,12 +41,47 @@ export function SettingsRoute() {
   )
 }
 
+type VerifyStatus = 'idle' | 'checking' | 'ok' | 'error'
+
 function ApiKeySection() {
   const [apiKey, setApiKey] = useLocalStorage<string>(
     STORAGE_KEYS.youtubeApiKey,
     '',
   )
   const [show, setShow] = useState(false)
+  const [status, setStatus] = useState<VerifyStatus>('idle')
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const apiKeyRef = useRef(apiKey)
+  apiKeyRef.current = apiKey
+  const lastVerifiedRef = useRef<string | null>(null)
+
+  const runVerify = async (key: string) => {
+    if (!key) {
+      setStatus('idle')
+      setErrorMsg(null)
+      return
+    }
+    if (lastVerifiedRef.current === key) return
+    setStatus('checking')
+    setErrorMsg(null)
+    try {
+      await verifyApiKey(key)
+      if (apiKeyRef.current !== key) return
+      lastVerifiedRef.current = key
+      setStatus('ok')
+    } catch (e) {
+      if (apiKeyRef.current !== key) return
+      let msg = '不明なエラー'
+      if (e instanceof YouTubeApiError) {
+        msg = e.reason ? `${e.message} (${e.reason})` : e.message
+      } else if (e instanceof Error) {
+        msg = e.message
+      }
+      setErrorMsg(msg)
+      setStatus('error')
+    }
+  }
+
   return (
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-2">
@@ -67,7 +109,15 @@ function ApiKeySection() {
           className="input-base flex-1"
           value={apiKey}
           placeholder="AIza..."
-          onChange={(e) => setApiKey(e.target.value)}
+          onChange={(e) => {
+            const v = e.target.value
+            setApiKey(v)
+            if (v !== lastVerifiedRef.current) {
+              setStatus('idle')
+              setErrorMsg(null)
+            }
+          }}
+          onBlur={() => void runVerify(apiKey)}
         />
         <button
           type="button"
@@ -78,11 +128,55 @@ function ApiKeySection() {
           {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
         </button>
       </div>
+      <VerifyIndicator status={status} errorMsg={errorMsg} hasKey={apiKey.length > 0} />
       <p className="text-xs text-slate-400">
         本日の概算クォータ使用量: {getQuotaUsed()} unit (10,000 unit/日)
       </p>
     </section>
   )
+}
+
+function VerifyIndicator({
+  status,
+  errorMsg,
+  hasKey,
+}: {
+  status: VerifyStatus
+  errorMsg: string | null
+  hasKey: boolean
+}) {
+  if (status === 'checking') {
+    return (
+      <p className="inline-flex items-center gap-1 text-xs text-slate-500">
+        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        APIキーを確認中…
+      </p>
+    )
+  }
+  if (status === 'ok') {
+    return (
+      <p className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+        <CheckCircle2 className="h-3.5 w-3.5" />
+        APIキーを確認できました
+      </p>
+    )
+  }
+  if (status === 'error') {
+    return (
+      <p className="inline-flex items-start gap-1 text-xs text-red-600 dark:text-red-400">
+        <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        <span>検証エラー: {errorMsg ?? '不明なエラー'}</span>
+      </p>
+    )
+  }
+  if (hasKey) {
+    return (
+      <p className="text-xs text-slate-400">
+        入力欄からフォーカスを外すと自動でAPIキーを検証します
+      </p>
+    )
+  }
+  return null
 }
 
 function ChannelsSection() {

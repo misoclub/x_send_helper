@@ -83,6 +83,15 @@ export async function resolveChannel(
   }
 }
 
+export async function verifyApiKey(apiKey: string): Promise<void> {
+  await call<{ items?: unknown[] }>(
+    'i18nRegions',
+    { part: 'snippet', hl: 'ja_JP' },
+    apiKey,
+    1,
+  )
+}
+
 interface PlaylistItemsResponse {
   items?: Array<{
     snippet?: {
