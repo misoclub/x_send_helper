@@ -22,7 +22,9 @@ async function call<T>(
 ): Promise<T> {
   const query = new URLSearchParams({ ...params, key: apiKey })
   const url = `${API_BASE}/${path}?${query.toString()}`
-  const res = await fetch(url)
+  const res = await fetch(url, {
+    referrerPolicy: 'no-referrer-when-downgrade',
+  })
   addQuota(quotaCost)
   if (!res.ok) {
     let reason: string | undefined
