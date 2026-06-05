@@ -16,6 +16,14 @@ export const youtubePostType: PostType = {
       autoFilled: true,
     },
     {
+      key: 'songtitle',
+      label: '楽曲名',
+      kind: 'text',
+      placeholder: '動画を選択すると「」『』内を自動抽出します',
+      helpText:
+        '動画タイトル内の「」または『』で囲まれた部分を楽曲名として自動抽出します。自由に編集できます。',
+    },
+    {
       key: 'channelTitle',
       label: 'チャンネル名',
       kind: 'text',

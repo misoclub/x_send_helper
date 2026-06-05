@@ -9,6 +9,7 @@ import { useRegisteredChannels } from '@/features/youtube/channelsStore'
 import { useLocalStorage } from '@/lib/useLocalStorage'
 import { STORAGE_KEYS } from '@/lib/storage'
 import { extractHashtagsFromTitle, mergeHashtags } from '@/lib/extractHashtags'
+import { extractSongTitle } from '@/lib/extractSongTitle'
 import {
   loadGroupedVideos,
   loadVideosForChannel,
@@ -98,12 +99,15 @@ function ComposeView({ postTypeId }: { postTypeId: 'youtube' | 'website' }) {
   const handlePickVideo = (video: Video) => {
     setActiveChannelId(video.channelId)
     const { cleanTitle, hashtags } = extractHashtagsFromTitle(video.title)
+    // 「」『』が無ければ曲名のみの動画とみなしてタイトルをそのまま使う
+    const songtitle = extractSongTitle(cleanTitle) || cleanTitle
     setValues((prev) => ({
       ...prev,
       title: cleanTitle,
       url: video.url,
       channelTitle: video.channelTitle,
       hashtags,
+      songtitle,
     }))
     const saved = templatesByChannel[video.channelId]
     if (saved && availableTemplates.some((t) => t.id === saved)) {
